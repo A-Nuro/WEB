@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab 2</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 10px;
+        }
+        .block {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .post-card {
+            border: 1px solid #000;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        textarea {
+            resize: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Посты с jsonplaceholder</h1>
+    <div class="block">
+        <h3>Создать новый пост</h3>
+        <form id="postForm">
+            <p>
+                <label>Название:<br>
+                    <input type="text" id="title" required>
+                </label>
+            </p>
+            <p>
+                <label>Текст:<br>
+                    <textarea id="body" required></textarea>
+                </label>
+            </p>
+            <button type="submit">Отправить</button>
+        </form>
+    </div>
+
+    <div class="block">
+        <h3>Лента постов</h3>
+        <div id="postsList">Загрузка...</div>
+    </div>
+
+    <script>
+        var API_URL = 'https://jsonplaceholder.typicode.com/posts';
+        var postsList = document.getElementById('postsList');
+        var postForm = document.getElementById('postForm');
+
+        function loadPosts() {
+            fetch(API_URL + '?_limit=4')
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(posts) {
+                    postsList.innerHTML = '';
+                    
+                    for (var i = 0; i < posts.length; i++) {
+                        var post = posts[i];
+                        
+                        var div = document.createElement('div');
+                        div.className = 'post-card';
+                        div.innerHTML = '<h4>' + post.title + '</h4><p>' + post.body + '</p>';
+                        
+                        postsList.appendChild(div);
+                    }
+                })
+                .catch(function(error) {
+                    postsList.innerHTML = 'Ошибка: ' + error;
+                });
+        }
+
+        postForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var titleValue = document.getElementById('title').value;
+            var bodyValue = document.getElementById('body').value;
+
+            var myData = {
+                title: titleValue,
+                body: bodyValue,
+                userId: 1
+            };
+
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify(myData),
+                headers: {
+                    'Content-type': 'application/json; charset=UTF-8'
+                }
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(createdPost) {
+                var div = document.createElement('div');
+                div.className = 'post-card';
+                div.style.borderColor = 'green';
+                div.innerHTML = '<h4>' + createdPost.title + '</h4><p>' + createdPost.body + '</p>';
+                
+                postsList.insertBefore(div, postsList.firstChild);
+                
+                postForm.reset();
+            })
+            .catch(function(error) {
+                alert('Ошибка: ' + error);
+            });
+        });
+
+        loadPosts();
+    </script>
+</body>
+</html>
